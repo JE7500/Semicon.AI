@@ -50,3 +50,14 @@ Follow the internal prompts to input a natural language description (e.g., "Crea
 The system will tokenize the prompt and generate the corresponding Verilog/VHDL output.
 
 Author :- Sparsh Pandit 
+
+
+
+![(Semicon AI Image)](https://github.com/user-attachments/assets/d89e28c2-f691-4f24-97de-abaa2f9f3885)
+
+
+
+![Semicon AI_elastration](https://github.com/user-attachments/assets/6dca94a7-c7cd-4409-ac4c-d2ee179a9d7e)
+
+
+
