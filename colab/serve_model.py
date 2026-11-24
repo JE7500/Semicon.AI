@@ -77,13 +77,19 @@ def generate(request: GenerateRequest):
     # Keep this prompt format aligned with the format used during LoRA fine-tuning.
     # If training used a different template, change this function to match it.
     language = "Verilog" if request.hdl == "verilog" else "VHDL"
-    constraints = "\\n".join(f"- {item}" for item in request.constraints) or "- No additional constraints"
-    module_line = f"Module/entity name: {request.module_name}\\n" if request.module_name else ""
+    constraints = "\n".join(f"- {item}" for item in request.constraints) or "- No additional constraints"
+    module_line = f"Module/entity name: {request.module_name}\n" if request.module_name else ""
+    instruction = (
+        f"{module_line}Specification: {request.specification}\n"
+        f"Design constraints:\n{constraints}\n"
+        f"Return only synthesizable {language} source code."
+    )
+    # Preserve the Verilog template observed in the existing Demo_7 notebook.
+    # VHDL is an experimental prompt path and must be evaluated independently.
     prompt = (
-        f"Generate synthesizable {language} RTL for the following hardware specification.\\n"
-        f"{module_line}Specification: {request.specification}\\n"
-        f"Design constraints:\\n{constraints}\\n"
-        f"Return only the {language} source code."
+        f"### Instruction:\n{instruction}\n\n### Verilog:\n"
+        if request.hdl == "verilog"
+        else f"### Instruction:\n{instruction}\n\n### VHDL:\n"
     )
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
     with torch.inference_mode():
