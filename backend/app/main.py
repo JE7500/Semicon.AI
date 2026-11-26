@@ -1,3 +1,4 @@
+import asyncio
 from typing import Literal
 
 import httpx
@@ -5,11 +6,12 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from .config import settings
+from verification.engine import VerificationEngine
 
 app = FastAPI(
     title="Semicon.AI API",
     version="2.0.0-alpha",
-    description="API gateway for hardware-aware RTL generation. Verification is a separate pipeline.",
+    description="API gateway for hardware-aware RTL generation and simulation-based RTL verification.",
 )
 
 
@@ -26,6 +28,15 @@ class GenerateResponse(BaseModel):
     model: str | None = None
     request_id: str | None = None
 
+class VerifyRequest(BaseModel):
+    rtl_code: str = Field(min_length=1, max_length=50000)
+    testbench_code: str = Field(min_length=1, max_length=50000)
+
+
+class VerifyResponse(BaseModel):
+    status: str
+    compile_output: str
+    simulation_output: str
 
 @app.get("/health")
 async def health():
@@ -78,3 +89,23 @@ async def generate(request: GenerateRequest):
         return GenerateResponse(**result)
     except Exception as exc:
         raise HTTPException(status_code=502, detail="Model service returned an invalid response.") from exc
+
+
+@app.post("/v1/verify", response_model=VerifyResponse)
+async def verify(request: VerifyRequest):
+    try:
+        engine = VerificationEngine(timeout_seconds=30)
+        result = await asyncio.to_thread(
+            engine.verify_code,
+            request.rtl_code,
+            request.testbench_code,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="Verification engine encountered an unexpected error.",
+        ) from exc
+
+    return VerifyResponse(**result)
