@@ -208,3 +208,7 @@ __marimo__/
 
 # Icarus Verilog simulation binaries
 verification/results/*.vvp
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
