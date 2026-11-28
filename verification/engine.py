@@ -93,8 +93,11 @@ class VerificationEngine:
                 or "FAIL:" in simulation_output
             ):
                 status = "functional_failed"
-            elif "ALL TESTS PASSED" in simulation_output:
-                status = "passed"
+            elif (
+                "ALL TESTS PASSED" in simulation_output.upper()
+               or "PASS: ALL COUNTER TESTS PASSED" in simulation_output.upper()
+           ):
+               status = "passed"
             else:
                 status = "inconclusive"
 
